@@ -84,7 +84,7 @@ export default function ConfigurationPage() {
                 },
                 {
                   var: "UP_API_ENCRYPTION_KEY",
-                  desc: "32-character AES encryption key for storing Up Bank tokens",
+                  desc: "64-character hex AES encryption key for storing Up Bank tokens",
                   required: "Yes",
                   default: "\u2014",
                 },
@@ -133,8 +133,8 @@ export default function ConfigurationPage() {
           <h3 className="font-[family-name:var(--font-nunito)] font-bold text-sm text-text-primary mb-3">
             Generate Your Keys
           </h3>
-          <CodeBlock title="terminal">{`# Generate a 32-character encryption key
-node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
+          <CodeBlock title="terminal">{`# Generate a 64-character hex encryption key (32 bytes for AES-256-GCM)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 # Generate a cron secret
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`}</CodeBlock>

@@ -72,15 +72,15 @@ In your Vercel project, go to **Settings** > **Environment Variables** and add:
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | Yes |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Your Supabase anon key | Yes |
 | `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase service role key | Yes |
-| `UP_API_ENCRYPTION_KEY` | A 32-character string (see below) | Yes |
+| `UP_API_ENCRYPTION_KEY` | A 64-character hex string (see below) | Yes |
 | `NEXT_PUBLIC_APP_URL` | Your Vercel deployment URL | Yes |
 | `CRON_SECRET` | A random secret string (see below) | Recommended |
 | `NEXT_PUBLIC_SKIP_LANDING` | `true` | Optional |
 
-**Generate your encryption key** (exactly 32 characters):
+**Generate your encryption key** (64-character hex string):
 
 ```bash
-node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 **Generate your cron secret:**
@@ -198,7 +198,7 @@ Make sure your Supabase **Site URL** and **Redirect URLs** match your actual dep
 
 - Ensure all **required** environment variables are set (see the table above)
 - Check that `NEXT_PUBLIC_SUPABASE_URL` starts with `https://`
-- Check that `UP_API_ENCRYPTION_KEY` is exactly 32 characters
+- Check that `UP_API_ENCRYPTION_KEY` is exactly 64 hex characters (generated with `randomBytes(32)`)
 - Check the Vercel build logs for specific error messages
 
 ### Webhook not syncing transactions

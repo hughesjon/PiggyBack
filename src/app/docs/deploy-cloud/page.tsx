@@ -333,7 +333,7 @@ export default function DeployCloudPage() {
                   {
                     var: "UP_API_ENCRYPTION_KEY",
                     required: "Yes",
-                    desc: "A 32-character hex string (see below)",
+                    desc: "A 64-character hex string (see below)",
                   },
                   {
                     var: "NEXT_PUBLIC_APP_URL",
@@ -370,8 +370,8 @@ export default function DeployCloudPage() {
           <h3 className="font-[family-name:var(--font-nunito)] font-bold text-sm text-text-primary mt-6">
             Generate Your Keys
           </h3>
-          <CodeBlock title="terminal">{`# Generate encryption key (exactly 32 characters)
-node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
+          <CodeBlock title="terminal">{`# Generate encryption key (64-character hex string, 32 bytes for AES-256-GCM)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 # Generate cron secret
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`}</CodeBlock>
@@ -628,7 +628,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`}</Code
             },
             {
               title: "Build fails on Vercel",
-              body: "Ensure all required environment variables are set. Check that NEXT_PUBLIC_SUPABASE_URL starts with https:// and UP_API_ENCRYPTION_KEY is exactly 32 characters.",
+              body: "Ensure all required environment variables are set. Check that NEXT_PUBLIC_SUPABASE_URL starts with https:// and UP_API_ENCRYPTION_KEY is exactly 64 hex characters (generated with randomBytes(32)).",
             },
             {
               title: "Webhook not syncing transactions",
