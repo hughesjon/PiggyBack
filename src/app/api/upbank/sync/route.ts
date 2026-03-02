@@ -63,7 +63,15 @@ export async function POST(request: Request) {
     return Response.json({ error: "Up Bank not connected" }, { status: 400 });
   }
 
-  const apiToken = getPlaintextToken(config.encrypted_token);
+  let apiToken: string;
+  try {
+    apiToken = getPlaintextToken(config.encrypted_token);
+  } catch {
+    return Response.json(
+      { error: "Failed to decrypt token. Check encryption key." },
+      { status: 500 }
+    );
+  }
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CreditCard, Loader2, Eye, EyeOff, ExternalLink, CheckCircle } from "lucide-react";
 import { connectUpBank, registerUpWebhook } from "@/app/actions/upbank";
+import { createClient } from "@/utils/supabase/client";
 
 interface BankStepProps {
   onNext: () => void;
@@ -22,6 +23,40 @@ export function BankStep({ onNext, onComplete }: BankStepProps) {
   const [syncPhase, setSyncPhase] = useState<SyncPhase>("idle");
   const [syncProgress, setSyncProgress] = useState("");
   const [txnCount, setTxnCount] = useState(0);
+  const [alreadyConnected, setAlreadyConnected] = useState(false);
+  const [accountCount, setAccountCount] = useState(0);
+  const [checkingConnection, setCheckingConnection] = useState(true);
+  const [showReconnectForm, setShowReconnectForm] = useState(false);
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: config } = await supabase
+          .from("up_api_configs")
+          .select("is_active")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (config?.is_active) {
+          const { count } = await supabase
+            .from("accounts")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .eq("is_active", true);
+
+          setAlreadyConnected(true);
+          setAccountCount(count || 0);
+        }
+      } finally {
+        setCheckingConnection(false);
+      }
+    };
+    checkConnection();
+  }, []);
 
   const handleConnect = async () => {
     if (!upToken.trim()) {
@@ -90,7 +125,6 @@ export function BankStep({ onNext, onComplete }: BankStepProps) {
       }
 
       setSyncPhase("done");
-      setTimeout(() => onComplete(), 1500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to connect bank");
       setSyncPhase("idle");
@@ -98,6 +132,49 @@ export function BankStep({ onNext, onComplete }: BankStepProps) {
       setLoading(false);
     }
   };
+
+  // Loading connection check
+  if (checkingConnection) {
+    return (
+      <div className="text-center py-8">
+        <Loader2 className="h-8 w-8 mx-auto animate-spin" style={{ color: "var(--text-tertiary)" }} />
+      </div>
+    );
+  }
+
+  // Already connected screen
+  if (alreadyConnected && !showReconnectForm && syncPhase === "idle") {
+    return (
+      <div className="text-center space-y-6 py-8">
+        <CheckCircle className="h-16 w-16 mx-auto" style={{ color: "var(--pastel-mint)" }} />
+        <div className="space-y-2">
+          <h2 className="text-xl font-[family-name:var(--font-nunito)] font-bold" style={{ color: "var(--text-primary)" }}>
+            Bank Connected
+          </h2>
+          <p className="font-[family-name:var(--font-dm-sans)]" style={{ color: "var(--text-secondary)" }}>
+            {accountCount} account{accountCount !== 1 ? "s" : ""} synced with Up Bank
+          </p>
+        </div>
+        <div className="space-y-3 max-w-sm mx-auto">
+          <Button
+            onClick={onComplete}
+            className="w-full rounded-xl font-[family-name:var(--font-nunito)] font-bold"
+            style={{ backgroundColor: "var(--pastel-mint)", color: "white" }}
+          >
+            Continue
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => setShowReconnectForm(true)}
+            className="w-full text-sm"
+            style={{ color: "var(--text-tertiary)" }}
+          >
+            Reconnect with a different token
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Show sync progress screen
   if (syncPhase !== "idle" && syncPhase !== "done") {
@@ -127,14 +204,23 @@ export function BankStep({ onNext, onComplete }: BankStepProps) {
   // Done screen
   if (syncPhase === "done") {
     return (
-      <div className="text-center space-y-4 py-8">
+      <div className="text-center space-y-6 py-8">
         <CheckCircle className="h-16 w-16 mx-auto" style={{ color: "var(--pastel-mint)" }} />
-        <h2 className="text-xl font-[family-name:var(--font-nunito)] font-bold" style={{ color: "var(--text-primary)" }}>
-          Bank Connected!
-        </h2>
-        <p className="font-[family-name:var(--font-dm-sans)]" style={{ color: "var(--text-secondary)" }}>
-          {syncProgress}
-        </p>
+        <div className="space-y-2">
+          <h2 className="text-xl font-[family-name:var(--font-nunito)] font-bold" style={{ color: "var(--text-primary)" }}>
+            Bank Connected!
+          </h2>
+          <p className="font-[family-name:var(--font-dm-sans)]" style={{ color: "var(--text-secondary)" }}>
+            {syncProgress}
+          </p>
+        </div>
+        <Button
+          onClick={onComplete}
+          className="w-full max-w-sm mx-auto rounded-xl font-[family-name:var(--font-nunito)] font-bold"
+          style={{ backgroundColor: "var(--pastel-mint)", color: "white" }}
+        >
+          Continue
+        </Button>
       </div>
     );
   }
