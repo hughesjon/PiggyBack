@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ---
 
+## [1.0.1] - 2026-03-02
+
+### Fixed
+- Fixed incorrect `UP_API_ENCRYPTION_KEY` length in cloud deployment guide — docs incorrectly stated 32 characters instead of the required 64-character hex string (32 bytes), causing a 500 error on first visit
+
+---
+
 ## [1.0.0] - 2026-02-26
 
 ### Added
