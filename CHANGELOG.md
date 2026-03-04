@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ---
 
+## [1.0.3] - 2026-03-04
+
+### Fixed
+- Ship default category mappings in production migration — without these, budget, activity, home dashboard, and AI categorization could not display or organize transactions for new deployments
+
+---
+
 ## [1.0.1] - 2026-03-02
 
 ### Fixed
